@@ -2,6 +2,8 @@
 
 EventHub is an enterprise-grade, real-time ticket booking and seating management engine designed specifically for technical conferences, summits, and large-scale tech events. It features dynamic, interactive seating grids, room-scoped state updates, transactional concurrency controls, and cryptographic attendee gate check-ins.
 
+🌐 **Production Deployment (Vercel)**: [https://frontend-iota-ashy.vercel.app](https://frontend-iota-ashy.vercel.app)
+
 ---
 
 ## ⚡ Concurrency & Architectural Blueprint
