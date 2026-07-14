@@ -6,9 +6,9 @@ EventHub is an enterprise-grade, real-time ticket booking and seating management
 
 ---
 
-## ⚡ Concurrency & Architectural Blueprint
+# ⚡ Concurrency & Architectural Blueprint
 
-### 1. Collaborative State Machine (Socket.io Rooms)
+## 1. Collaborative State Machine (Socket.io Rooms)
 Rather than broadcasting seat state mutations globally (which degrades network throughput and creates client-side lag), EventHub scopes active sessions using resource-bound channels: `event_${eventId}`.
 
 ```mermaid
@@ -43,7 +43,7 @@ sequenceDiagram
     Note over UserB: Screen color for B5 transitions to red instantly
 ```
 
-### 2. Double-Booking Prevention (Transactional Integrity)
+## 2. Double-Booking Prevention (Transactional Integrity)
 To guarantee that two users checking out at the exact same millisecond cannot book the same seat, EventHub utilizes:
 - **Compound Database Constraints**: `SeatSchema.index({ event: 1, row: 1, number: 1 }, { unique: true })` preventing duplication at the MongoDB database layout layer.
 - **Mongoose Transactional Sessions**: The booking controllers detect if the MongoDB deployment is a Replica Set (e.g. MongoDB Atlas production instances) and automatically wrap seat lookups, pricing assessments, and booking insertions inside a database transaction session. If any validation fails, the transaction is immediately aborted.
@@ -66,9 +66,9 @@ erDiagram
     Ticket ||--|| Seat : links
 ```
 
-### Collection Definitions
+## Collection Definitions
 
-#### A. Users (`User`)
+### A. Users (`User`)
 Stores user profiles and login credentials. Role-based claims dictate dashboard access privileges.
 ```typescript
 {
@@ -82,7 +82,7 @@ Stores user profiles and login credentials. Role-based claims dictate dashboard 
 }
 ```
 
-#### B. Events (`Event`)
+### B. Events (`Event`)
 Configures event descriptors, location, date, total capacity limits, and tier price tables.
 ```typescript
 {
@@ -102,7 +102,7 @@ Configures event descriptors, location, date, total capacity limits, and tier pr
 }
 ```
 
-#### C. Seats (`Seat`)
+### C. Seats (`Seat`)
 Dynamically populated upon event creation. Contains unique coordinate keys and temporary lock details.
 ```typescript
 {
@@ -118,7 +118,7 @@ Dynamically populated upon event creation. Contains unique coordinate keys and t
 }
 ```
 
-#### D. Bookings (`Booking`)
+### D. Bookings (`Booking`)
 Acts as the financial ledger capturing booked seat references, total costs, and transaction references.
 ```typescript
 {
@@ -133,7 +133,7 @@ Acts as the financial ledger capturing booked seat references, total costs, and 
 }
 ```
 
-#### E. Tickets (`Ticket`)
+### E. Tickets (`Ticket`)
 Represents the gate credentials, securing check-ins with signed cryptographic payloads.
 ```typescript
 {
@@ -160,29 +160,29 @@ To prevent ticket spoofing, forging, or double-entry gate bypassing:
 
 ---
 
-## 🛠️ API Endpoint Catalog
+# 🛠️ API Endpoint Catalog
 
-### 1. Authentication (`/api/auth`)
+## 1. Authentication (`/api/auth`)
 * `POST /register`: Create a new User. Claims role (`attendee` or `organizer`).
 * `POST /login`: Authenticates password and returns access JWT.
 * `GET /me`: Returns profile of currently signed-in user.
 
-### 2. Event Management (`/api/events`)
+## 2. Event Management (`/api/events`)
 * `GET /`: Lists all events. Supports filter variables: `?search=Title&venue=City&date=YYYY-MM-DD`.
 * `POST /`: Creates an event and automatically seeds the corresponding seating coordinate grid (restricted to `organizer`).
 * `GET /:id/seats`: Fetches the live seating grid with current hold status and active expirations.
 
-### 3. Bookings (`/api/bookings`)
+## 3. Bookings (`/api/bookings`)
 * `GET /`: List booking transaction history for current user.
 * `POST /`: Reserve selected seats. Takes mock payment details. Changes seat status to `booked`.
 * `POST /:id/cancel`: Cancels booking, releases seats back to `available`, deletes tickets, and returns refund logs.
 
-### 4. Ticket Verification (`/api/tickets`)
+## 4. Ticket Verification (`/api/tickets`)
 * `GET /`: Retrieve all tickets owned by the user.
 * `GET /:id/qr`: Generates base64 QR URL representation of the secure signed check-in token.
 * `POST /verify`: Verifies signed QR tokens and marks attendee check-in logs (restricted to `organizer`).
 
-### 5. Analytics & Broadcasters (`/api/analytics`)
+## 5. Analytics & Broadcasters (`/api/analytics`)
 * `GET /:eventId`: MongoDB Aggregation Pipeline calculating revenue, capacities, and ticket sales.
 * `GET /:eventId/roster`: Renders attendee coordinates ledger.
 * `GET /:eventId/roster/csv`: Export attendee ledger directly to a structured `.csv` document.
@@ -190,19 +190,19 @@ To prevent ticket spoofing, forging, or double-entry gate bypassing:
 
 ---
 
-## ⚡ Setup & Launch Instructions
+# ⚡ Setup & Launch Instructions
 
-### Prerequisites
+## Prerequisites
 - Node.js (v20+)
 - Local MongoDB running at `mongodb://localhost:27017`
 
-### 1. Install Project Dependencies
+## 1. Install Project Dependencies
 Run from the root monorepo directory:
 ```bash
 npm run install:all
 ```
 
-### 2. Seed database
+## 2. Seed database
 Populates accounts and conference seating grids:
 ```bash
 cd backend
@@ -212,12 +212,12 @@ node seed.js
 - **Organizer**: `organizer@codeanova.com` / `password123`
 - **Attendee**: `attendee@codeanova.com` / `password123`
 
-### 3. Run Integration Test Cases
+## 3. Run Integration Test Cases
 ```bash
 npm run test
 ```
 
-### 4. Run Concurrent Servers
+## 4. Run Concurrent Servers
 ```bash
 cd ..
 npm run dev
